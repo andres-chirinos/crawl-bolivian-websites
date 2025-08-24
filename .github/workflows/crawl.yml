@@ -41,8 +41,9 @@ jobs:
           timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
           print(f'TIMESTAMP={timestamp}')
           # Generate a URL slug for artifact naming
+          import re
           url = os.environ.get('URL', '')
-          url_slug = url.replace('https://', '').replace('/', '')
+          url_slug = re.sub(r'[^A-Za-z0-9_-]', '_', url.replace('https://', '').replace('http://', ''))
           print(f'URL_SLUG={url_slug}')
           """ >> $GITHUB_ENV
         env:
