@@ -64,8 +64,7 @@ jobs:
           --postLoadDelay 1 \
           --collection "${{ env.URL_SLUG }}" \
           --workers 4 \
-          --clickSelector a \
-          --clickSelector button
+          --clickSelector "a,button"
 
       - name: Upload raw data
         id: upload-raw-data-step
