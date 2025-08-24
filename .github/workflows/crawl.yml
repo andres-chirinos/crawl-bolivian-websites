@@ -50,9 +50,12 @@ jobs:
           URL: ${{ github.event.inputs.url }}
 
       - name: Run Crawler
+        env:
+          URL: ${{ github.event.inputs.url }}
+          URL_SLUG: ${{ env.URL_SLUG }}
         run: |
           docker run --rm -v ${{ github.workspace }}/data:/crawls/ webrecorder/browsertrix-crawler crawl \
-          --url ${{ env.URL }} \
+          --url "$URL" \
           --generateWACZ \
           --blockads --adBlockMessage "AD BLOCKED" \
           --blockMessage "URL BLOCKED" \
@@ -62,7 +65,7 @@ jobs:
           --lang es \
           --retries 3 \
           --postLoadDelay 1 \
-          --collection "${{ env.URL_SLUG }}" \
+          --collection "$URL_SLUG" \
           --workers 4 \
           --clickSelector "a,button"
 
