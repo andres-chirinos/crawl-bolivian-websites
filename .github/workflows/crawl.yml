@@ -65,9 +65,10 @@ jobs:
           --lang es \
           --retries 3 \
           --postLoadDelay 1 \
-          --collection "$URL_SLUG" \
+          --collection "$URL_SLUG"-"$TIMESTAMP" \
           --workers 4 \
-          --clickSelector "a,button"
+          --clickSelector "a,button" \ 
+          --scopeType domain
 
       - name: Upload raw data
         id: upload-raw-data-step
@@ -87,4 +88,5 @@ jobs:
           target: raw-data-${{ env.TIMESTAMP }}-${{ env.URL_SLUG }}.zip
           credentials: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
           parent_folder_id: ${{ env.DRIVE_FOLDER_ID }}
-          name: raw-data_${{ env.TIMESTAMP }}-${{ env.URL_SLUG }}.zip
+          name: ${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}.zip
+          child_folder: ${{ env.URL_SLUG }}
