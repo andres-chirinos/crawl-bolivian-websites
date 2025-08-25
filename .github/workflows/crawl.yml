@@ -67,8 +67,9 @@ jobs:
           --postLoadDelay 1 \
           --collection "$URL_SLUG"-"$TIMESTAMP" \
           --workers 4 \
-          --clickSelector "a,button" \ 
-          --scopeType domain
+          --clickSelector "a,button"
+        
+        #--scopeType "domain"
 
       - name: Upload raw data
         id: upload-raw-data-step
