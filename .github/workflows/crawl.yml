@@ -84,7 +84,7 @@ jobs:
           echo "Checking ./data/ content before upload:"
           ls -l ./data/
           count=$(find ./data/ -type f | wc -l)
-          tree ./
+          find . -maxdepth 2 -print
           if [[ "$count" -eq 0 ]]; then
             echo "ERROR: No files found in ./data/ to upload as artifact."
             exit 1
