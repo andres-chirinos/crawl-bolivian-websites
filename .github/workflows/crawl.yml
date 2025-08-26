@@ -9,6 +9,14 @@ on:
         description: "URL to crawl"
         required: true
         default: ""
+      depth:
+        description: "Crawl depth"
+        required: false
+        default: "10"
+      scoreType:
+        description: "Crawl score type"
+        required: false
+        default: "prefix"
 
 jobs:
   extract:
@@ -48,34 +56,34 @@ jobs:
           """ >> $GITHUB_ENV
         env:
           URL: ${{ github.event.inputs.url }}
+          DEPTH: ${{ github.event.inputs.depth }}
+          SCORE_TYPE: ${{ github.event.inputs.scoreType }}
 
       - name: Run Crawler
         env:
           URL: ${{ github.event.inputs.url }}
+          DEPTH: ${{ github.event.inputs.depth }}
           URL_SLUG: ${{ env.URL_SLUG }}
+          SCORE_TYPE: ${{ github.event.inputs.scoreType }}
         run: |
-          docker run --rm -v ./data:/crawls/ webrecorder/browsertrix-crawler crawl --url "$URL" --generateWACZ --blockads --adBlockMessage "AD BLOCKED" --blockMessage "URL BLOCKED" --depth 10 --timeout 120 --scoreType "prefix" --allowHashUrls --useSitemap --waitUntil networkidle0 --lang es --retries 3 --postLoadDelay 1 --collection "$URL_SLUG"-"$TIMESTAMP" --workers 4 --clickSelector "a,button" \ --screenshot ["view", "thumbnail", "fullPage", "fullPageFinal"] --title "$URL_SLUG" --description "$URL_SLUG - $TIMESTAMP"
-        # --combineWARC \
-        # --generateCDX \
-        # --headless true \
-        # --linkSelector ["a[href]->href"] \
+          docker run --rm -v ./data:/crawls/ webrecorder/browsertrix-crawler crawl --url "$URL" --generateWACZ --blockads --adBlockMessage "AD BLOCKED" --blockMessage "URL BLOCKED" --depth "$DEPTH" --timeout 120 --scoreType "$SCORE_TYPE" --allowHashUrls --useSitemap --waitUntil networkidle0 --lang es --retries 3 --postLoadDelay 1 --collection "$URL_SLUG"-"$TIMESTAMP" --workers 4 --clickSelector "a,button" \ --screenshot ["view", "thumbnail", "fullPage", "fullPageFinal"] --title "$URL_SLUG" --description "$URL_SLUG - $TIMESTAMP"
 
       - name: Upload raw data
         id: upload-raw-data-step
         uses: actions/upload-artifact@v4
         with:
-          name: raw-data-${{ env.URL_SLUG }}
+          name: raw-data-${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}
           path: ./data/*
           retention-days: ${{ env.GITHUB_ACTIONS_ARTIFACT_DATA_RETENTION_DAYS }}
 
       - name: Zip raw data
         run: |
-          zip -r raw-data-${{ env.TIMESTAMP }}-${{ env.URL_SLUG }}.zip ./data/
+          zip -r raw-data-${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}.zip ./data/
 
       - name: Upload to Google Drive
         uses: willo32/google-drive-upload-action@v1
         with:
-          target: raw-data-${{ env.TIMESTAMP }}-${{ env.URL_SLUG }}.zip
+          target: raw-data-${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}.zip
           credentials: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
           parent_folder_id: ${{ env.DRIVE_FOLDER_ID }}
           name: ${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}.zip
