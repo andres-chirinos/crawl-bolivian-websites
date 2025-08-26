@@ -85,6 +85,7 @@ jobs:
           ls -l ./data/
           count=$(find ./data/ -type f | wc -l)
           if [[ "$count" -eq 0 ]]; then
+            tree ./
             echo "ERROR: No files found in ./data/ to upload as artifact."
             exit 1
           fi
