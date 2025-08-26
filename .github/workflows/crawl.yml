@@ -71,7 +71,6 @@ jobs:
           --collection "$URL_SLUG"-"$TIMESTAMP" \
           --workers 4 \
           --clickSelector "a,button" \  
-          --linkSelector ["a[href]->href"] \
           --headless true \
           --generateCDX \
           --combineWARC \
@@ -79,6 +78,7 @@ jobs:
           --screenshot ["view", "thumbnail", "fullPage", "fullPageFinal"] \
           --title "$URL_SLUG" \
           --description "$URL_SLUG - $TIMESTAMP"
+        # --linkSelector ["a[href]->href"] \
 
       - name: Upload raw data
         id: upload-raw-data-step
