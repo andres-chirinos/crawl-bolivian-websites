@@ -77,12 +77,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: raw-data-${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}
-          path: ./data/*
+          path: ${{ github.workspace }}/data/*
           retention-days: ${{ env.GITHUB_ACTIONS_ARTIFACT_DATA_RETENTION_DAYS }}
 
       - name: Zip raw data
         run: |
-          zip -r raw-data-${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}.zip ./data/
+          zip -r raw-data-${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}.zip ${{ github.workspace }}/data/collections
 
       - name: Upload to Google Drive
         uses: willo32/google-drive-upload-action@v1
