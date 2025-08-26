@@ -10,18 +10,22 @@ on:
         required: true
         default: ""
       depth:
-        description: "Crawl depth"
+        description: "Crawl depth [>=1]"
         required: false
         default: "10"
       scoreType:
-        description: "Crawl score type"
+        description: "Crawl score type [page, page-spa, {prefix}, host, domain, any, custom]"
         required: false
         default: "prefix"
+      runs-on:
+        description: "Runner type [{ubuntu-latest}, self-hosted]"
+        required: false
+        default: "ubuntu-latest"
 
 jobs:
   extract:
     name: Extract
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.inputs.runs-on }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
