@@ -54,8 +54,8 @@ jobs:
           URL: ${{ github.event.inputs.url }}
           URL_SLUG: ${{ env.URL_SLUG }}
         run: |
-          docker run --rm -v ${{ github.workspace }}/data:/crawls/ webrecorder/browsertrix-crawler crawl \
-          --url "$URL" \
+          docker run --rm -v ./data:/crawls/ webrecorder/browsertrix-crawler crawl \
+          --url "https://anhinforma.github.io/despachoSCZ/" \
           --generateWACZ \
           --blockads --adBlockMessage "AD BLOCKED" \
           --blockMessage "URL BLOCKED" \
