@@ -71,7 +71,7 @@ jobs:
           --collection "$URL_SLUG"-"$TIMESTAMP" \
           --workers 4 \
           --clickSelector "a,button" \  
-          --selectLinks ["a[href]->href"] \
+          --linkSelector ["a[href]->href"] \
           --headless true \
           --generateCDX \
           --combineWARC \
