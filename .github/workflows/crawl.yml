@@ -49,9 +49,24 @@ jobs:
           # ...
           VOLUME_ARG="-v ${DATA_DIR}:/crawls/"
           docker run --rm $VOLUME_ARG webrecorder/browsertrix-crawler crawl \
-            # ... otros argumentos ...
+            --url "$URL" \
+            --generateWACZ \
+            --blockads \
+            --adBlockMessage "AD BLOCKED" \
+            --blockMessage "URL BLOCKED" \
+            --depth "$DEPTH" \
+            --timeout 120 \
+            --scoreType "$SCORE_TYPE" \
+            --allowHashUrls \
+            --useSitemap \
+            --waitUntil networkidle0 \
+            --lang es \
+            --retries 3 \
+            --postLoadDelay 1 \
             --collection "$URL_SLUG"-"$TIMESTAMP" \
-            # ...
+            --workers 4 \
+            --clickSelector "a,button" \
+            --title "$URL_SLUG" \
             --description "$URL_SLUG - $TIMESTAMP"
 
       - name: Check artifact content
