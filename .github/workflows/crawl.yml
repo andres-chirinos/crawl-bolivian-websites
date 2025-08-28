@@ -26,8 +26,6 @@ jobs:
   extract:
     name: Extract
     runs-on: ${{ github.event.inputs.runs-on }}
-    env:
-      DATA_DIR: ${{ github.workspace }}/data
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -67,11 +65,8 @@ jobs:
           DEPTH: ${{ github.event.inputs.depth }}
           URL_SLUG: ${{ env.URL_SLUG }}
           SCORE_TYPE: ${{ github.event.inputs.scoreType }}
-          DATA_DIR: ${{ env.DATA_DIR }}
         run: |
-          echo "DATA_DIR=${DATA_DIR}"
-          # ...
-          VOLUME_ARG="-v ${DATA_DIR}:/crawls/"
+          VOLUME_ARG="-v ./data/:/crawls/"
           docker run --rm $VOLUME_ARG webrecorder/browsertrix-crawler crawl \
             --url "$URL" \
             --generateWACZ \
@@ -95,11 +90,11 @@ jobs:
 
       - name: Check artifact content
         run: |
-          echo "Checking ${DATA_DIR} content before upload:"
-          ls -l "${DATA_DIR}"
-          count=$(find "${DATA_DIR}" -type f | wc -l)
+          echo "Checking ./data/ content before upload:"
+          ls -l "./data/"
+          count=$(find "./data/" -type f | wc -l)
           if [[ "$count" -eq 0 ]]; then
-            echo "ERROR: No files found in ${DATA_DIR} to upload as artifact."
+            echo "ERROR: No files found in ./data/ to upload as artifact."
             exit 1
           fi
 
@@ -116,14 +111,12 @@ jobs:
     name: Load
     needs: extract
     runs-on: ubuntu-latest
-    env:
-      DATA_DIR: ${{ github.workspace }}/data
     steps:
       - name: Download raw data
         uses: actions/download-artifact@v4
         with:
-          name: ${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}
-          path: ${{ env.DATA_DIR }}
+          name: raw-data-${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}
+          path: ./data/
 
       - name: Zip raw data
         run: |
