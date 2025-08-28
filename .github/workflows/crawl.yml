@@ -32,10 +32,34 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Prepare Data
+      - name: Read Config
         run: |
-          mkdir -p "${DATA_DIR}"
-          echo "Preparing data directory at ${DATA_DIR}..."
+          python -c """
+          import yaml, datetime
+          import os
+          # Config variables
+          def flatten_config(prefix, config):
+            for key, value in config.items():
+              if isinstance(value, dict):
+                flatten_config(f'{prefix}{key.upper()}_', value)
+              else:
+                print(f'{prefix}{key.upper()}={value}')
+          with open('config.yml') as f:
+            config = yaml.safe_load(f)
+          flatten_config('', config)
+          # Runtime variables
+          timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+          print(f'TIMESTAMP={timestamp}')
+          # Generate a URL slug for artifact naming
+          import re
+          url = os.environ.get('URL', '')
+          url_slug = re.sub(r'[^A-Za-z0-9_-]', '_', url.replace('https://', '').replace('http://', ''))
+          print(f'URL_SLUG={url_slug}')
+          """ >> $GITHUB_ENV
+        env:
+          URL: ${{ github.event.inputs.url }}
+          DEPTH: ${{ github.event.inputs.depth }}
+          SCORE_TYPE: ${{ github.event.inputs.scoreType }}
 
       - name: Run Crawler
         env:
@@ -80,10 +104,11 @@ jobs:
           fi
 
       - name: Upload raw data
+        id: upload-raw-data-step
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}
-          path: ${{ env.DATA_DIR }}/*
+          name: raw-data-${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}
+          path: ./data/*
           retention-days: ${{ env.GITHUB_ACTIONS_ARTIFACT_DATA_RETENTION_DAYS }}
           if-no-files-found: error
 
@@ -102,12 +127,11 @@ jobs:
 
       - name: Zip raw data
         run: |
-          zip -r ${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}.zip "${DATA_DIR}"
-
+          zip -r raw-data-${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}.zip ./data/
       - name: Upload to Google Drive
         uses: willo32/google-drive-upload-action@v1
         with:
-          target: ${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}.zip
+          target: raw-data-${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}.zip
           credentials: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
           parent_folder_id: ${{ env.DRIVE_FOLDER_ID }}
           name: ${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}.zip
