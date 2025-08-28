@@ -102,7 +102,7 @@ jobs:
         id: upload-raw-data-step
         uses: actions/upload-artifact@v4
         with:
-          name: raw-data-${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}
+          name: raw-data
           path: ./data/*
           retention-days: ${{ env.GITHUB_ACTIONS_ARTIFACT_DATA_RETENTION_DAYS }}
           if-no-files-found: error
@@ -147,7 +147,7 @@ jobs:
       - name: Download raw data
         uses: actions/download-artifact@v4
         with:
-          name: raw-data-${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}
+          name: raw-data
           path: ./data/
 
       - name: Zip raw data
