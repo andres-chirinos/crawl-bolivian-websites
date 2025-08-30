@@ -110,7 +110,7 @@ jobs:
   load:
     name: Load
     needs: extract
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.inputs.runs-on }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -161,3 +161,4 @@ jobs:
           parent_folder_id: ${{ env.DRIVE_FOLDER_ID }}
           name: ${{ env.URL_SLUG }}-${{ env.TIMESTAMP }}.zip
           child_folder: ${{ env.URL_SLUG }}
+
