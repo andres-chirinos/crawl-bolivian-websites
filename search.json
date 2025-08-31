@@ -1,0 +1,9 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "El Archivo Web de Bolivia / Bolivia Web Archive",
+    "section": "",
+    "text": "El Archivo Web de Bolivia / Bolivia Web Archive\nInspirado vivamente en el Internet Archive\nEste proyecto tiene como objetivo preservar y archivar sitios web bolivianos, asegurando que la información y la cultura digital de Bolivia no se pierdan con el tiempo. Especialmente ante reformas políticas y sociales que puedan afectar el acceso a esta información.\nAsí también se busca fomentar la investigación y el acceso a la historia digital de Bolivia, proporcionando una herramienta valiosa para académicos, periodistas y ciudadanos interesados en la memoria colectiva del país. Todo esto se realiza con el apoyo de tecnologías de web crawling y almacenamiento en formato WARC (Formato del Web ARChive).\nIncluso este sirve para poder mapear la evolución de los sitios web a lo largo del tiempo, permitiendo un análisis más profundo de los cambios en la información, tecnologias, servicios disponibles y la cultura digital de Bolivia.\nHecho con ❤️ y sobre todo trabajo por Andrés Chirinos, Chat GPT y su equipo.\nApoya este proyecto en GitHub Sponsors.\n\nStatus\n\n\n\nCrawl website\n\n\n\n\n\nRepositorio de Crawling y Análisis\nRepositorio con notebooks para crawling, análisis y subida manual de datos, junto con configuración y datos almacenados en Google Drive.\nComponentes principales:\n\nCrawl Notebook: Notebook para realizar crawling inicial.\nCrawl Standard Analysis Notebook: Notebook para análisis estándar de datos extraídos.\nManual Crawl Upload Notebook: Notebook para carga manual de datasets de crawling.\nConfiguración: Configuración\nREADME: README\nDatos de crawling: Carpeta de datos extraídos, almacenados externamente en Google Drive.\n\nAcceso a los datos:\n\nGoogle Drive - Carpeta de Datos"
+  }
+]
