@@ -1,0 +1,48 @@
+---
+execute:
+  echo: false
+---
+
+{{< include ../README.md >}}
+
+```{python}
+import json
+from pathlib import Path
+from IPython.display import display, Markdown
+
+with open(Path("../ro-crate-metadata.json")) as f:
+	crate = json.load(f)
+
+dataset = next(x for x in crate["@graph"] if x.get("@type") == "Dataset" and x["@id"] == "./")
+nombre = dataset.get("name", "-")
+descripcion = dataset.get("description", "-")
+partes = dataset.get("hasPart", [])
+graph = {x["@id"]: x for x in crate["@graph"]}
+
+md = f"""
+### {nombre}
+
+_{descripcion}_
+
+"""
+
+md += "\n**Componentes principales:**\n\n"
+for parte in partes:
+	p = graph.get(parte["@id"], {})
+	desc = p.get("description", p.get("name", ""))
+	if parte["@id"].endswith(".ipynb"):
+		md += f"- [{p.get('name', parte['@id'])}](../{parte['@id']}): {desc}\n"
+	elif parte["@id"].endswith(".yml") or parte["@id"].endswith(".md"):
+		md += f"- [{p.get('name', parte['@id'])}](../{parte['@id']}): {desc}\n"
+	elif parte["@id"].endswith("/"):
+		md += f"- [{p.get('name', parte['@id'])}](../{parte['@id']}): {desc}\n"
+
+# Buscar enlace a Google Drive
+data_folder = graph.get("data/", {})
+drive = data_folder.get("distribution", [{}])[0].get("@id", "")
+if drive:
+	drive_obj = graph.get(drive, {})
+	md += f"\n**Acceso a los datos:**\n\n- [{drive_obj.get('name', 'Google Drive')}]({drive})\n"
+
+display(Markdown(md))
+```
