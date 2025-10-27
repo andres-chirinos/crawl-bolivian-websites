@@ -1,0 +1,117 @@
+name: Crawl website
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "URL to crawl"
+        required: true
+      depth:
+        description: "Crawl depth [>=1]"
+        default: "10"
+      scoreType:
+        description: "Crawl score type [page, page-spa, {prefix}, host, domain, any, custom]"
+        default: "prefix"
+      runs_on:
+        description: "Runner type [ubuntu-latest, self-hosted]"
+        default: "ubuntu-latest"
+
+jobs:
+  extract:
+    name: Extract & Crawl
+    runs-on: ${{ github.event.inputs.runs_on }}
+    env:
+      URL: ${{ github.event.inputs.url }}
+      DEPTH: ${{ github.event.inputs.depth }}
+      SCORE_TYPE: ${{ github.event.inputs.scoreType }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare environment
+        id: prep
+        run: |
+          set -e
+          mkdir -p data
+          sudo apt-get update -y && sudo apt-get install -y python3 python3-yaml jq zip bc
+          TIMESTAMP=$(date +"%Y%m%d%H%M%S")
+          URL_SLUG=$(echo "$URL" | sed 's~https\?://~~' | tr -cd 'A-Za-z0-9_-')
+          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+          echo "url_slug=$URL_SLUG" >> $GITHUB_OUTPUT
+
+      - name: Read configuration
+        run: |
+          python3 - <<'PYCODE'
+          import yaml, os
+          with open('config.yml') as f:
+              config = yaml.safe_load(f)
+          for k, v in config.items():
+              if isinstance(v, dict):
+                  for kk, vv in v.items():
+                      print(f'{k.upper()}_{kk.upper()}={vv}')
+              else:
+                  print(f'{k.upper()}={v}')
+          PYCODE >> $GITHUB_ENV
+
+      - name: Run Browsertrix Crawler
+        env:
+          TIMESTAMP: ${{ steps.prep.outputs.timestamp }}
+          URL_SLUG: ${{ steps.prep.outputs.url_slug }}
+        run: |
+          set -e
+          docker pull webrecorder/browsertrix-crawler:latest
+          MAX_PAGES=500
+          TIMEOUT=300
+
+          docker run --rm -v "$PWD/data:/crawls" webrecorder/browsertrix-crawler crawl \
+            --url "$URL" \
+            --depth "$DEPTH" \
+            --scoreType "$SCORE_TYPE" \
+            --generateWACZ \
+            --blockads \
+            --blockMessage "Blocked by crawler" \
+            --useSitemap \
+            --waitUntil networkidle0 \
+            --lang es \
+            --timeout $TIMEOUT \
+            --maxPageLimit $MAX_PAGES \
+            --collection "$URL_SLUG-$TIMESTAMP" \
+            --workers 4 \
+            --title "$URL_SLUG" \
+            --description "$URL_SLUG - $TIMESTAMP"
+
+      - name: Compress results
+        id: compress
+        run: |
+          zip -r data-${{ steps.prep.outputs.url_slug }}-${{ steps.prep.outputs.timestamp }}.zip ./data
+          echo "zip_path=data-${{ steps.prep.outputs.url_slug }}-${{ steps.prep.outputs.timestamp }}.zip" >> $GITHUB_OUTPUT
+
+      - name: Upload to Google Drive
+        id: upload_gdrive
+        continue-on-error: true
+        uses: willo32/google-drive-upload-action@v1
+        with:
+          target: ${{ steps.compress.outputs.zip_path }}
+          credentials: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
+          parent_folder_id: ${{ env.DRIVE_FOLDER_ID }}
+          name: ${{ steps.prep.outputs.url_slug }}-${{ steps.prep.outputs.timestamp }}.zip
+          child_folder: ${{ steps.prep.outputs.url_slug }}
+
+      - name: Verify upload success
+        run: |
+          if [ "${{ steps.upload_gdrive.outcome }}" != "success" ]; then
+            echo "Google Drive upload failed. Uploading as GitHub artifact instead."
+            exit 1
+          else
+            echo "Upload succeeded."
+          fi
+
+      - name: Upload fallback artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crawl-${{ steps.prep.outputs.url_slug }}-${{ steps.prep.outputs.timestamp }}
+          path: ${{ steps.compress.outputs.zip_path }}
+          retention-days: 30
+          compression-level: 9
