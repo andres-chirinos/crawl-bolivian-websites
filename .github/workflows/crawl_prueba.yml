@@ -42,7 +42,7 @@ jobs:
 
       - name: Read configuration
         run: |
-          python3 - <<'PYCODE'
+          python3 - <<'PYCODE' >> $GITHUB_ENV
           import yaml, os
           with open('config.yml') as f:
               config = yaml.safe_load(f)
@@ -52,7 +52,7 @@ jobs:
                       print(f'{k.upper()}_{kk.upper()}={vv}')
               else:
                   print(f'{k.upper()}={v}')
-          PYCODE >> $GITHUB_ENV
+          PYCODE
 
       - name: Run Browsertrix Crawler
         env:
