@@ -1,4 +1,4 @@
-name: Crawl website
+name: Crawl Test website
 
 on:
   workflow_dispatch:
@@ -9,6 +9,12 @@ on:
       depth:
         description: "Crawl depth [>=1]"
         default: "10"
+      max-pages:
+        description: "Maximum pages to crawl [>=1]"
+        default: "500"
+      timeout:
+        description: "Crawl timeout in seconds [>=1]"
+        default: "300"
       scoreType:
         description: "Crawl score type [page, page-spa, {prefix}, host, domain, any, custom]"
         default: "prefix"
@@ -24,6 +30,8 @@ jobs:
       URL: ${{ github.event.inputs.url }}
       DEPTH: ${{ github.event.inputs.depth }}
       SCORE_TYPE: ${{ github.event.inputs.scoreType }}
+      MAX_PAGES: ${{ github.event.inputs.max-pages }}
+      TIMEOUT: ${{ github.event.inputs.timeout }}
 
     steps:
       - name: Checkout repository
@@ -58,11 +66,13 @@ jobs:
         env:
           TIMESTAMP: ${{ steps.prep.outputs.timestamp }}
           URL_SLUG: ${{ steps.prep.outputs.url_slug }}
+          MAX_PAGES: ${{ steps.prep.outputs.max_pages }}
+          TIMEOUT: ${{ steps.prep.outputs.timeout }}
         run: |
           set -e
           docker pull webrecorder/browsertrix-crawler:latest
-          MAX_PAGES=500
-          TIMEOUT=300
+          TIMEOUT=${{ env.TIMEOUT }}
+          MAX_PAGES=${{ env.MAX_PAGES }}
 
           docker run --rm -v "$PWD/data:/crawls" webrecorder/browsertrix-crawler crawl \
             --url "$URL" \
