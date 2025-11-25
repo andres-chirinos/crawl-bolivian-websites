@@ -122,6 +122,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: crawl-${{ steps.prep.outputs.url_slug }}-${{ steps.prep.outputs.timestamp }}
-          path: ${{ steps.compress.outputs.zip_path }}
+          path: ${{ steps.compress.outputs.zip_path || '.' }}
           retention-days: 30
           compression-level: 9
